@@ -12,25 +12,56 @@
 ### 1. `/usr/local/bin/scan_clam_home_tmp.sh`
 ```bash
 #!/bin/bash
+WATCH_DIRS="/home /tmp"
 LOG="/var/log/clamav/home_tmp_scan.log"
+
 freshclam --quiet
-clamscan -i -r --bell --log=$LOG /home /tmp
+
+clamdscan --no-summary --fdpass --multiscan --infected --remove $WATCH_DIRS 2>/dev/null | awk '
+  /FOUND/ {
+    status="infected";
+    sig=substr($0, index($0, ":") + 2);
+    sig=substr(sig, 1, length(sig)-6)
+    printf("{\"timestamp\":\"%s\",\"path\":\"%s\",\"result\":\"%s\",\"signature\":\"%s\"}\n", strftime("%FT%T%z"), $1, status, sig)
+  }
+' >> $LOG
 ```
 
 ### 2. `/usr/local/bin/scan_clam_system.sh`
 ```bash
 #!/bin/bash
+WATCH_DIRS="/etc /bin /sbin /usr/bin /usr/sbin"
 LOG="/var/log/clamav/system_dirs_scan.log"
+
 freshclam --quiet
-clamscan -i -r --bell --log=$LOG /etc /bin /sbin /usr/bin /usr/sbin
+
+clamdscan --no-summary --fdpass --multiscan --infected --remove $WATCH_DIRS 2>/dev/null | awk '
+  /FOUND/ {
+    status="infected";
+    sig=substr($0, index($0, ":") + 2);
+    sig=substr(sig, 1, length(sig)-6)
+    printf("{\"timestamp\":\"%s\",\"path\":\"%s\",\"result\":\"%s\",\"signature\":\"%s\"}\n", strftime("%FT%T%z"), $1, status, sig)
+  }
+' >> $LOG
 ```
 
 ### 3. `/usr/local/bin/scan_clam_full.sh`
 ```bash
 #!/bin/bash
-LOG="/var/log/clamav/full_root_scan.log"
 freshclam --quiet
-clamscan -i -r --bell --log=$LOG /
+WATCH_DIRS="/"
+LOG="/var/log/clamav/full_root_scan.log"
+
+freshclam --quiet
+
+clamdscan --no-summary --fdpass --multiscan --infected --remove $WATCH_DIRS 2>/dev/null | awk '
+  /FOUND/ {
+    status="infected";
+    sig=substr($0, index($0, ":") + 2);
+    sig=substr(sig, 1, length(sig)-6)
+    printf("{\"timestamp\":\"%s\",\"path\":\"%s\",\"result\":\"%s\",\"signature\":\"%s\"}\n", strftime("%FT%T%z"), $1, status, sig)
+  }
+' >> $LOG
 ```
 
 ### 4. `/usr/local/bin/scan_maldet.sh`
