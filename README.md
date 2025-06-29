@@ -64,6 +64,7 @@ inotifywait -m -r -e close_write,modify,create,move $WATCH_DIRS --format '%e|%w%
 do
     if [[ -f "$FILE" ]]; then
         TIMESTAMP=$(date -Iseconds)
+        HOSTNAME=$(hostname)
         freshclam --quiet
 
         # Executa o scan e captura resultado
@@ -75,7 +76,7 @@ do
         fi
 
         # Formata como JSON e salva no log
-        echo "{\"timestamp\":\"$TIMESTAMP\",\"event\":\"$EVENT\",\"path\":\"$FILE\",\"result\":\"$STATUS\"}" >> "$LOG"
+        echo "{\"timestamp\":\"$TIMESTAMP\",\"hostname\":\"$HOSTNAME\",\"event\":\"$EVENT\",\"path\":\"$FILE\",\"result\":\"$STATUS\"}" >> "$LOG"
     fi
 done
 
