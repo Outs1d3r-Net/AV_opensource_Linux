@@ -58,18 +58,27 @@ Crie o arquivo `/usr/local/bin/monitor_inotify_clamav.sh` com o conteúdo abaixo
 #!/bin/bash
 
 WATCH_DIRS="/home /tmp"
-LOG="/var/log/clamav/inotify_scan.log"
+LOG="/var/log/clamav/inotify_scan.json"
 
-# Monitorar eventos de criação/modificação em arquivos regulares
-inotifywait -m -r -e close_write,modify,create,move $WATCH_DIRS --format '%w%f' | while read FILE
+inotifywait -m -r -e close_write,modify,create,move $WATCH_DIRS --format '%e|%w%f' | while IFS='|' read EVENT FILE
 do
-    # Somente arquivos regulares e existentes
     if [[ -f "$FILE" ]]; then
-        echo "$(date '+%Y-%m-%d %H:%M:%S') - Escaneando $FILE" >> $LOG
+        TIMESTAMP=$(date -Iseconds)
         freshclam --quiet
-        clamscan -i --bell --log=$LOG "$FILE"
+
+        # Executa o scan e captura resultado
+        RESULT=$(clamdscan --fdpass --no-summary "$FILE" 2>/dev/null)
+        if echo "$RESULT" | grep -q "FOUND"; then
+            STATUS="infected"
+        else
+            STATUS="clean"
+        fi
+
+        # Formata como JSON e salva no log
+        echo "{\"timestamp\":\"$TIMESTAMP\",\"event\":\"$EVENT\",\"path\":\"$FILE\",\"result\":\"$STATUS\"}" >> "$LOG"
     fi
 done
+
 ```
 
 **Dê permissão de execução:**
