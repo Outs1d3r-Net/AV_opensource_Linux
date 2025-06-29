@@ -160,7 +160,13 @@ systemctl status monitor-inotify-clamav.service
     create 0640 root root
 }
 ```
-
+### Teste malware:  
+```bash
+nano /tmp/eicar_test_file
+```
+```
+X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
+```
 ---
 
 ## ✅ Resumo da estratégia final
