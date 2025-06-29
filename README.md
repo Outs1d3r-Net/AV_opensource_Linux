@@ -155,7 +155,7 @@ systemctl status monitor-inotify-clamav.service
 
 ## ✅ Resumo da estratégia final
 
-- **Monitoramento em tempo real com `inotify`** para escanear apenas arquivos modificados em `$HOME` e `/tmp`.
+- **Monitoramento em tempo real com `inotify`** para escanear apenas arquivos modificados em `/home` e `/tmp`.
 - Scans programados para diretórios críticos e sistema completo em horários definidos para evitar sobrecarga.
 - Maldet e RKHunter rodando diariamente para complementar a segurança.
 - Logs rotacionados para evitar acúmulo.
