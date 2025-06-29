@@ -75,8 +75,23 @@ LOG="/var/log/maldet_scan.log"
 ```bash
 #!/bin/bash
 LOG="/var/log/rkhunter_scan.log"
+
+# Atualiza definições
 rkhunter --update
-rkhunter --check --sk --rwo >> $LOG
+
+# Roda o scan e converte a saída para JSON
+rkhunter --check --sk --rwo --nocolors 2>/dev/null | awk '
+BEGIN {
+  print "[" > "'"$LOG"'"
+}
+{
+  gsub(/"/, "\\\"", $0);
+  printf "  {\"timestamp\": \"%s\", \"message\": \"%s\"},\n", strftime("%FT%T%z"), $0 >> "'"$LOG"'"
+}
+END {
+  print "]" >> "'"$LOG"'"
+}
+' | sed -i '$s/},/}/' "$LOG"
 ```
 
 ---
